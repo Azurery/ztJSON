@@ -8,7 +8,7 @@
 namespace ztJSON {
 	class json final {
 		//JSON的六种类型
-		enum type {
+		enum json_type {
 			ZT_NULL,
 			ZT_FALSE,
 			ZT_TRUE,
@@ -16,23 +16,28 @@ namespace ztJSON {
 			ZT_STRING,
 			ZT_OBJECT
 		};
-		//array:用于存储JSON数据的vector
-		typedef std::vector<json> array;
-		//object:用于存储JSON对象
-		typedef std::map<std::string, json> object;
+		//ARRAY类型
+		using array=std::vector<json>;
+		//OBJECT类型
+		using object=std::map<std::string, json>;
 
-		//各种不同类型的JSON构造器
-		//NULL
-		json() noexcept;	
-		//NUMBER
-		json(double value);	
-		json(int value);
-		//STRING
-		json(const std::string& value);
-		//ARRAY
-		json(const array& values);
-		//OBJECT
-		json(const object& values);
+		//构造函数
+		json() noexcept;	//NUL类型
+		json(int value);	//NUMBER
+		json(double vlaue); //NUMBER
+		json(bool value);	//BOOL
+		json(const std::string& value);	//SRING
+		json(std::string&& value);
+		json(const char* value);
+		json(const array& value);	//ARRAY
+		json(array&& value);
+		json(const object& value);	//OBJECT
+		json(object&& value);
+
+		json_type type() const;
+		bool is_null() const { return type() == json_type::ZT_NULL; }
+		bool is_false() const { return type() == json_type::ZT_FALSE; }
+
 	};
 }
 
