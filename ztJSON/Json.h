@@ -4,14 +4,16 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace ztJSON {
 	class json final {
+	public:
 		//JSON的六种类型
 		enum json_type {
 			ZT_NULL,
-			ZT_FALSE,
-			ZT_TRUE,
+			ZT_BOOL,
+			ZT_ARRAY,
 			ZT_NUMBER,
 			ZT_STRING,
 			ZT_OBJECT
@@ -34,11 +36,213 @@ namespace ztJSON {
 		json(const object& value);	//OBJECT
 		json(object&& value);
 
+		json_value* get_json() const { return ptr.get(); }
 		json_type type() const;
 		bool is_null() const { return type() == json_type::ZT_NULL; }
-		bool is_false() const { return type() == json_type::ZT_FALSE; }
+		bool is_bool() const { return type() == json_type::ZT_BOOL; }
+		bool is_number() const { return type() == json_type::ZT_NUMBER; }
+		bool is_string() const { return type() == json_type::ZT_STRING; }
+		bool is_array() const { return type() == json_type::ZT_ARRAY; }
+		const json& operator[](size_t i) const;//如果这是一个array，返回一个arr[i]的引用
+		const json& operator[](const std::string& key) const; //如果这是一个object，返回一个obj[key]的引用
+		
+		int int_value() const;
+		double double_value() const;
+		bool bool_value() const;
+		std::string& string_value() const;
+		json::array& array_value() const;
+		json::object& object_value() const;
+		void serialize() const;
+	private:
+		std::shared_ptr<json_value> ptr;	//ptr为指向内部实际类型json_value的智能指针
+		json(json_value* val);
+	};
+
+	/*json_value是一个内部使用的类型，表示对各种json类型的值的抽象
+		提供一些获取实际类型、获取实际值等抽象接口
+	*/
+	class json_value {
+		friend class json;
+	public:
+		//默认构造函数
+		json_value() = default;
+		//阻止拷贝的构造函数
+		json_value(const json_value&) = delete;
+		//阻止拷贝的拷贝赋值运算符
+		json_value& operator =(json_value&) = delete;
+		json_value(void *) = delete;	//通过显示的调用，禁止使用void*类型，避免隐式地转化成一个bool类型
+
+		//virtual json::json_type type() const = 0;
+		virtual bool equal(const json_value* value) const = 0;
+		virtual json::json_type type() const = 0;	
+		const virtual std::string& get_string_value() const;
+		const virtual int get_int_value() const;
+		const virtual double get_double_value() const;
+		const virtual bool get_bool_value() const;
+		const virtual json::array& get_array_value() const;
+		const virtual json::object& get_object_vlaue() const;
+		virtual const json& operator[](size_t i) const;
+		virtual const json& operator[](std::string& key) const;
+		virtual ~json_value() {}
 
 	};
+
+	class json_number :public json_value {
+		friend class json;
+		friend class json_value;
+	public:
+		json::json_type type() const override{
+			return json::ZT_NUMBER;
+		}
+		virtual bool less(const json_value* value) const = 0;
+		virtual int get_int() const = 0;
+		virtual double get_double() const = 0;
+		virtual bool equal_to(int i) const = 0;
+		virtual bool equal_to(double i) const = 0;
+	};
+
+	class json_int final:public json_number {
+		friend json;
+		friend json_value;
+	public:
+		json_int(int v) :value(v) {}
+
+		bool less(const json_value* other) const override {
+			return	value < other->get_int_value();
+		}
+		int get_int() const override {
+			return value;
+		}
+		double get_double() const override{
+			return static_cast<double>(value);
+		}
+		bool equal(const json_value* other) const override {
+			auto num = (json_number*)other;
+			return num->equal_to(value);
+		}
+	private:
+		bool equal_to(int i) const override {
+			return value == i;
+		}
+
+		bool equal_to(double i) const override {
+			return static_cast<double>(value) == i;
+		}
+
+	private:
+		const int value;
+
+	};
+
+	class json_double final :public json_number {
+		friend class json;
+		friend class json_value;
+	public:
+		json_double(double i):value(i){}
+
+		int get_int() const override{
+			return static_cast<int>(value);
+		}
+		bool less(const json_value* other) const override {
+			return value < other->get_double_value;
+		}
+		double get_double()const override {
+			return value;
+		}
+		bool equal(const json_value* other) const override {
+			auto num = (json_number*)other;
+			return num->equal_to(value);
+		}
+	private:
+		bool equal_to(int i) const override {
+			return value == static_cast<double>(i);
+		}
+		bool equal_to(double i) const override {
+			return value == i;
+		}
+	private:
+		const double value;
+	};
+
+	class json_boolean :public json_value {
+		friend class json_value;
+		friend class json;
+	public:
+		json_boolean(bool b):value(b){}
+		json::json_type type() const override {
+			return json::ZT_BOOL;
+		}
+		bool equal(const json_value* other) const override {
+			using TYPE = decltype(this);
+			return value == static_cast<TYPE>(other)->value;
+		}
+	private:
+		bool value;
+
+	};
+
+	class json_string : public json_value {
+		friend class json_value;
+		friend class json;
+	public:
+		json_string(const std::string& s):str(s){}
+		json::json_type type() const override {
+			return json::ZT_STRING;
+		}
+		bool equal(const json_value* other) const override {
+			using TYPE = decltype(this);
+			return str == static_cast<TYPE>(other)->str;
+		}
+	private:
+		std::string str;
+	};
+
+	class json_object :public json_value {
+		friend class json_value;
+		friend class json;
+	public:
+		json_object(const json::object& val):value(val){}
+		json_object(const json::object&& val):value(std::move(val)){}
+		json::json_type type() const override {
+			return json::ZT_OBJECT;
+		}
+		bool equal(const json_value* other) const override {
+			using TYPE = decltype(this);
+			return value == static_cast<TYPE>(other)->value;\
+		}
+
+	private:
+		json::object value;
+	};
+
+	class json_array :public json_value {
+		friend class json;
+		friend class json_value;
+	public:
+		json_array(const json::array& val):value(val){}
+		json_array(const json::array&& val):value(std::move(val)){}
+		json::json_type type() const override {
+			return json::ZT_ARRAY;
+		}
+		bool equal(const json_value* other) const override {
+			using TYPE = decltype(this);
+			return value == static_cast<TYPE>(other)->value;
+		}
+	private:
+		json::array value;
+	};
+
+	class json_null :public json_value {
+	public:
+		json::json_type type() const override {
+			return json::ZT_NULL;
+		}
+		bool equal(const json_value* other) const override {
+			return this == other;
+		}
+	};
+
+	
 }
 
 #endif
