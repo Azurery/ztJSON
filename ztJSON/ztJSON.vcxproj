@@ -146,8 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Json.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Parse.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Json.cpp" />

@@ -18,13 +18,10 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Parse.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
