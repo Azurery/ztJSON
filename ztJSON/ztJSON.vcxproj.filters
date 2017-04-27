@@ -35,5 +35,8 @@
     <ClCompile Include="Json.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Parse.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

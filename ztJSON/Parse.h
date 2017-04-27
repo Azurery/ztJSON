@@ -5,7 +5,9 @@ namespace ztJSON {
 	class json_parse {
 	public:
 		json parse(const std::string& s) noexcept;
+		json parse(const std::string& s, std::string& err) noexcept;
 	private:
+		//std::string err;
 		json_parse(const std::string& s);
 		json parse_value();
 		json parse_boolean();
@@ -13,6 +15,9 @@ namespace ztJSON {
 		json parse_array();
 		json parse_object();
 		json parse_string();
-
+	private:
+		bool flag;
+		const std::string& str;
+		size_t i;
 	};
 }
