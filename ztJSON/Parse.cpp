@@ -2,9 +2,6 @@
 
 
 namespace ztJSON {
-	json_parse::json_parse(const std::string& s){
-
-	}
 	json json_parse::parse(const std::string& s, std::string& err) noexcept {
 		try {
 			json_parse parser(s);
@@ -33,16 +30,93 @@ namespace ztJSON {
 		return print_err(std::move(msg), json());
 	}
 
-#define SKIP_WTSPACE(){\
-	while(str[i]==' '||str[i]=='\r'||str=='\n'||str=='\t')\
-		i++;\
+	void json_parse::skip_whitespace(){
+		for (; str[i] == ' ' || str[i] == '\r' || str[i] == '\n' || str[i] == '\t'; ++i)
+			;
 	}
 
 	json json_parse::parse_string() {
-		std::string ret;
-		while (true) {
-			if (i == str.size())
-				return print_err("unexpected end of input in string", "");
+		skip_whitespace();
+		++i;
+		if (str[i] == '\"') {
+			++i;
+			return {};
+		}
+		std::string container;
+		for (; i < str.size(); ++i) {
+			char ch = str[i];
+			if (ch == '\\') {
+				++i;
+				switch (str[i]) {
+				case '\"':
+					++i;
+					container.push_back('\"');
+					continue;
+				case '\\':
+					++i;
+					container.push_back('\\');
+					continue;
+				case '/':
+					++i;
+					container.push_back('/');
+					continue;
+				case 'b':
+					++i;
+					container.push_back('\b');
+					continue;
+				case 'f':
+					++i;
+					container.push_back('\f');
+					continue;
+				case 't':
+					++i;
+					container.push_back('\t');
+					continue;
+				case 'r':
+					++i;
+					container.push_back('\r');
+					continue;
+				default:;
+				}
+			}
+			if (str[i] == '\"') {
+				++i;
+				return container;
+			}else {
+				container.push_back(str[i]);
+				++i;
+			}
+		}
+		return print_err("invalid input","");
+	}
+	json json_parse::parse_object() {
+		skip_whitespace();
+	}
+	json json_parse::parse_number() {
+		skip_whitespace();
+		size_t start_pos = i;
+		if(str[i]=='-')
+			++i;
+		if (str[i] == '0')
+			++i;
+		else if (isdigit(str[i])) {	//当为数字1-9时
+			++i;
+			while (isdigit(str[i]))
+				++i;
+		}else {
+			print_err("invalid number " + str[i]);
+		}
+		//小数点部分
+		if (str[i] == '.') {
+			++i;
+			if (!isdigit(str[i])) {
+				print_err("Unexpected digit at position");
+			}
+			while (isdigit(str[i]))
+				++i;
+		}
+		//指数部分
+		if (str[i] == 'e' || str[i] == 'E') {
 
 		}
 	}
