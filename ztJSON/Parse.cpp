@@ -117,8 +117,15 @@ namespace ztJSON {
 		}
 		//指数部分
 		if (str[i] == 'e' || str[i] == 'E') {
-
+			++i;
+			if (str[i] == '-' || str[i] == '+')
+				++i;
+			if (!isdigit(str[i]))
+				print_err("Unexcepted digit at position" + i);
+			while (isdigit(str[i]))
+				++i;
 		}
+		return std::strtod(str.c_str() + start_pos, nullptr);
 	}
 	
 }
