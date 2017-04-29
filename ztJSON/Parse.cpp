@@ -128,4 +128,27 @@ namespace ztJSON {
 		return std::strtod(str.c_str() + start_pos, nullptr);
 	}
 	
+	json json_parse::parse_array() {
+		skip_whitespace();
+		json::array container;
+		assert(str[i] == '[');
+		++i;
+		skip_whitespace();
+		if (str[i] == ']') {
+			++i;
+			return container;
+		}
+		while (str[i]) {
+			container.push_back(parse_value());
+			skip_whitespace();
+			if (str[i] == ',')
+				++i;
+			else if (str[i] == ']') {
+				++i;
+				return container;
+			}else {
+				print_err("Error");
+			}
+		}
+	}
 }
