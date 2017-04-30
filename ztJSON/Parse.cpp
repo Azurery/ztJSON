@@ -34,8 +34,15 @@ namespace ztJSON {
 		for (; str[i] == ' ' || str[i] == '\r' || str[i] == '\n' || str[i] == '\t'; ++i)
 			;
 	}
-
-	json json_parse::parse_string() {
+	json json_parse::parse_null() {
+		if (strncmp(str.c_str(), "null", 4) == 0) {
+			i += 4;
+			json null;
+			return null;
+		}
+		print_err("Expected string null error");
+	}
+	std::string json_parse::parse_string() {
 		skip_whitespace();
 		++i;
 		if (str[i] == '\"') {
@@ -91,6 +98,40 @@ namespace ztJSON {
 	}
 	json json_parse::parse_object() {
 		skip_whitespace();
+		assert(str[i] == '{');
+		++i;
+		json::object obj;
+		skip_whitespace();
+		if (str[i] == '}') {
+			++i;
+			return obj;
+		}
+		for (; i < str.size(); ++i) {
+			auto temp = parse_string();
+			if (obj.find(temp) != obj.end()) {
+				print_err("Duplicated key in the object");
+			}
+			skip_whitespace();
+			if (str[i] != ':') {
+				print_err("Expected ':' error");
+			}
+			++i;
+			auto value = parse_value();
+			//构造一个object对象，并将其压入object对象之中
+			obj.emplace(std::move(temp), std::move(value));
+			skip_whitespace();
+			if (str[i] == ',') {
+				++i;
+			}
+			else if (str[i] == '}') {
+				++i;
+				return obj;
+			}
+			else 
+
+
+
+		}
 	}
 	json json_parse::parse_number() {
 		skip_whitespace();
@@ -150,5 +191,17 @@ namespace ztJSON {
 				print_err("Error");
 			}
 		}
+	}
+	json json_parse::parse_boolean() {
+		skip_whitespace();
+		if (strncmp(str.c_str(), "true", 4) == 0) {
+			i += 4;
+			return true;
+		}
+		if (strncmp(str.c_str(), "false", 5) == 0) {
+			i += 5;
+			return false;
+		}
+		print_err("Excepted true or false error");
 	}
 }

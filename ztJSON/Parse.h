@@ -10,11 +10,12 @@ namespace ztJSON {
 		//std::string err;
 		json_parse(const std::string& s);
 		json parse_value();
+		json parse_null();
 		json parse_boolean();
 		json parse_number();
 		json parse_array();
 		json parse_object();
-		json parse_string();
+		std::string parse_string();
 		void skip_whitespace();
 	private:
 		bool flag;

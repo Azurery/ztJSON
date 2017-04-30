@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <cassert>
+#include <iostream>
 namespace ztJSON {
 	
 	class json_value;
