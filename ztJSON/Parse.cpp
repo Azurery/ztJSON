@@ -34,6 +34,41 @@ namespace ztJSON {
 		for (; str[i] == ' ' || str[i] == '\r' || str[i] == '\n' || str[i] == '\t'; ++i)
 			;
 	}
+	void json_parse::skip_commits() {
+		if (str[i] == '/') {
+			i++;
+			if (i = str.size())
+				print_err("unexpected end of input");
+			if (str[i] == '/') {
+				i++;
+				if (i = str.size())
+					print_err("unexpected end of input");
+				while (str[i] != '\n') {
+					i++;
+					if(i=str.size())
+						print_err("unexpected end of input");
+				}
+
+			}
+		}
+		else if(str[i]=='*'){
+			i++;
+			if (i = str.size())
+				print_err("unexpected end of input");
+			while (str[i] != '*'&&str[i++] != '/') {
+				i++;
+				if (i>str.size() + 1)
+					print_err("unexpected end of input");
+			}
+			i += 2;
+			if (i = str.size())
+				print_err("unexpected end of input");	
+		}
+		else {
+			print_err("unexpected end of input");
+		}
+		
+	}
 	json json_parse::parse_null() {
 		if (strncmp(str.c_str(), "null", 4) == 0) {
 			i += 4;
@@ -127,10 +162,8 @@ namespace ztJSON {
 				++i;
 				return obj;
 			}
-			else 
-
-
-
+			else
+				print_err("Expected '}");
 		}
 	}
 	json json_parse::parse_number() {

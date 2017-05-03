@@ -17,6 +17,7 @@ namespace ztJSON {
 		json parse_object();
 		std::string parse_string();
 		void skip_whitespace();
+		void skip_commits();
 	private:
 		bool flag;
 		const std::string& str;
