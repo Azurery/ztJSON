@@ -68,10 +68,12 @@ namespace ztJSON {
 		const std::string& string_value() const;
 		const json::array& array_value() const;
 		const json::object& object_value() const;
-		void serialize() const;
-		void serialize(const std::string& str) const {
-
+		std::string serialize() const {
+			std::string ret;
+			serialize(ret);
+			return ret;
 		}
+		void serialize(const std::string& str) const {}
 	private:
 		std::shared_ptr<json_value> ptr;	//ptr为指向内部实际类型json_value的智能指针
 		json(json_value* val);
@@ -171,7 +173,7 @@ namespace ztJSON {
 			return static_cast<int>(value);
 		}
 		bool less(const json_value* other) const override {
-			return value < other->get_double_value;
+			return value < other->get_double_value();
 		}
 		double get_double()const override {
 			return value;

@@ -1,4 +1,5 @@
 #include "Json.h"
+#include "stdafx.h"
 #include <string>
 namespace ztJSON {
 	static const int MAX_DEPTH = 200;	//表示最多可处理的嵌套的深度

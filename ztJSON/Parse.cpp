@@ -1,5 +1,5 @@
 #include "Parse.h"
-
+#include "stdafx.h"
 
 namespace ztJSON {
 	json json_parse::parse(const std::string& s, std::string& err) noexcept {
@@ -19,14 +19,15 @@ namespace ztJSON {
 	}
 
 	template <typename T>
-	T print_err(std::string&& msg, const T msg_err) {
+	T json_parse::print_err(std::string&& msg, const T msg_err) {
+		std::string err;
 		if (!flag)
 			err = std::move(msg);
 		flag = true;
 		return msg_err;
 	}
 	//以json形式返回输出错误
-	json print_err(std::string&& msg) {
+	json json_parse::print_err(std::string&& msg) {
 		return print_err(std::move(msg), json());
 	}
 

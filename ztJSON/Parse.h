@@ -1,11 +1,12 @@
-#pragma once
 #include "Json.h"
 namespace ztJSON {
 
 	class json_parse {
 	public:
-		json parse(const std::string& s) noexcept;
-		json parse(const std::string& s, std::string& err) noexcept;
+		json static parse(const std::string& s) noexcept;
+		json static parse(const std::string& s, std::string& err) noexcept;
+		template <typename T> T print_err(std::string&& msg, const T msg_err);
+		json print_err(std::string&& msg);
 	private:
 		//std::string err;
 		json_parse(const std::string& s);
@@ -22,5 +23,6 @@ namespace ztJSON {
 		bool flag;
 		const std::string& str;
 		size_t i;
+		
 	};
 }
