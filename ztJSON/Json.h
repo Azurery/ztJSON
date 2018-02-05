@@ -8,7 +8,6 @@
 #include <cassert>
 #include <iostream>
 namespace ztJSON {
-	
 	class json_value;
 	//定义一个自己的删除器类deleter
 	class deleter {
@@ -49,8 +48,9 @@ namespace ztJSON {
 		json(array&& value);
 		json(const object& value);	//OBJECT
 		json(object&& value);
-
+		//get_json()函数用于返回json对象
 		json_value* get_json() const { return ptr.get(); }
+		//返回json的类型
 		json_type type() const;
 		bool is_null() const { return type() == json_type::ZT_NULL; }
 		bool is_bool() const { return type() == json_type::ZT_BOOL; }
@@ -59,9 +59,10 @@ namespace ztJSON {
 		bool is_array() const { return type() == json_type::ZT_ARRAY; }
 		const json& operator[](size_t i) const;//如果这是一个array，返回一个arr[i]的引用
 		json& operator[](size_t i);
-		const json& operator[](const std::string& key) const; //如果这是一个object，返回一个obj[key]的引用
-		json& operator[](const std::string& i);
+		const json& operator[](const std::string& key) const; 
+		//如果这是一个object，返回一个obj[key]的引用
 
+		//value wrapper,即值外覆器
 		int int_value() const;
 		double double_value() const;
 		bool bool_value() const;
@@ -73,14 +74,16 @@ namespace ztJSON {
 			serialize(ret);
 			return ret;
 		}
+		//serialize()函数用于将string序列化为一个json对象
 		void serialize(const std::string& str) const {}
 	private:
-		std::shared_ptr<json_value> ptr;	//ptr为指向内部实际类型json_value的智能指针
-		json(json_value* val);
+		//ptr为指向内部实际类型json_value的智能指针
+		std::shared_ptr<json_value> ptr;
 	};
 
-	/*json_value是一个内部使用的类型，表示对各种json类型的值的抽象
-		提供一些获取实际类型、获取实际值等抽象接口
+	/*
+	json_value是一个内部使用的类型，表示对各种json类型的值的抽象
+	提供一些获取实际类型、获取实际值等抽象接口
 	*/
 	class json_value {
 		friend class json;
@@ -91,11 +94,12 @@ namespace ztJSON {
 		json_value(const json_value&) = delete;
 		//阻止拷贝的拷贝赋值运算符
 		json_value& operator =(json_value&) = delete;
-		json_value(void *) = delete;	//通过显示的调用，禁止使用void*类型，避免隐式地转化成一个bool类型
+		//通过显示的调用，禁止使用void*类型，避免隐式地转化成一个bool类型
+		json_value(void *) = delete;	
 		json_value(json_value&&) = delete;
-		//virtual json::json_type type() const = 0;
+		
 
-		const virtual json_value* duplicate() const = 0;
+		const virtual json_value* get_copy() const = 0;
 		virtual bool equal(const json_value* value) const = 0;
 		virtual json::json_type type() const = 0;
 		const virtual json& get_value(size_t i) const;
@@ -131,7 +135,7 @@ namespace ztJSON {
 		friend json_value;
 	public:
 		json_int(int v) :value(v) {}
-		json_value* duplicate() const override {
+		json_value* get_copy() const override {
 			return new json_int(value);
 		}
 		bool less(const json_value* other) const override {
@@ -144,7 +148,7 @@ namespace ztJSON {
 			return static_cast<double>(value);
 		}
 		bool equal(const json_value* other) const override {
-			auto num = (json_number*)other;
+			auto num = reinterpret_cast<const json_number*>(other);
 			return num->equal_to(value);
 		}
 	private:
@@ -158,7 +162,6 @@ namespace ztJSON {
 
 	private:
 		const int value;
-
 	};
 
 	class json_double final :public json_number {
@@ -166,7 +169,7 @@ namespace ztJSON {
 		friend class json_value;
 	public:
 		json_double(double i):value(i){}
-		json_value* duplicate() const override {
+		json_value* get_copy() const override {
 			return new json_double(value);
 		}
 		int get_int() const override{
@@ -198,19 +201,17 @@ namespace ztJSON {
 		friend class json;
 	public:
 		json_boolean(bool b):value(b){}
-		json_value* duplicate() const override {
+		json_value* get_copy() const override {
 			return new json_boolean(value);
 		}
 		json::json_type type() const override {
 			return json::ZT_BOOL;
 		}
 		bool equal(const json_value* other) const override {
-			using TYPE = decltype(this);
-			return value == static_cast<TYPE>(other)->value;
+			return value == static_cast<decltype(this)>(other)->value;
 		}
 	private:
 		bool value;
-
 	};
 
 	class json_string : public json_value {
@@ -219,15 +220,14 @@ namespace ztJSON {
 	public:
 		json_string(const std::string& val):value(val){}
 		json_string(std::string&& s) :value(std::move(s)) {}
-		json_value* duplicate() const override {
+		json_value* get_copy() const override {
 			return new json_string(value);
 		}
 		json::json_type type() const override {
 			return json::ZT_STRING;
 		}
 		bool equal(const json_value* other) const override {
-			using TYPE = decltype(this);
-			return value == static_cast<TYPE>(other)->value;
+			return value == static_cast<decltype(this)>(other)->value;
 		}
 	private:
 		std::string value;
@@ -239,17 +239,15 @@ namespace ztJSON {
 	public:
 		json_object(const json::object& val):value(val){}
 		json_object(const json::object&& val):value(std::move(val)){}
-		json_value* duplicate() const override {
+		json_value* get_copy() const override {
 			return new json_object(value);
 		}
 		json::json_type type() const override {
 			return json::ZT_OBJECT;
 		}
 		bool equal(const json_value* other) const override {
-			using TYPE = decltype(this);
-			return value == static_cast<TYPE>(other)->value;\
+			return value == static_cast<decltype(this)>(other)->value;\
 		}
-
 	private:
 		json::object value;
 	};
@@ -260,15 +258,14 @@ namespace ztJSON {
 	public:
 		json_array(const json::array& val):value(val){}
 		json_array(const json::array&& val):value(std::move(val)){}
-		json_value* duplicate() const override {
+		json_value* get_copy() const override {
 			return new json_array(value);
 		}
 		json::json_type type() const override {
 			return json::ZT_ARRAY;
 		}
 		bool equal(const json_value* other) const override {
-			using TYPE = decltype(this);
-			return value == static_cast<TYPE>(other)->value;
+			return value == static_cast<decltype(this)>(other)->value;
 		}
 	private:
 		json::array value;
@@ -276,7 +273,7 @@ namespace ztJSON {
 
 	class json_null :public json_value {
 	public:
-		const json_value* duplicate() const override {
+		const json_value* get_copy() const override {
 			return this;
 		}
 		json::json_type type() const override {
@@ -286,8 +283,6 @@ namespace ztJSON {
 			return this == other;
 		}
 	};
-
-	
 }
 
 #endif

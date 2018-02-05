@@ -4,40 +4,17 @@
 namespace ztJSON {
 	static const int MAX_DEPTH = 200;	//表示最多可处理的嵌套的深度
 	
-	//json::json():ptr(nullptr){}
-	//json::json(int value) :ptr(std::make_shared<json_int>(value)){}
-	//json::json(double value):ptr(std::make_shared<json_double>()){}
-	json::json() noexcept : json() {}
-	json::json(int value) :json(){
-		new json_int(value);
-	}
-	json::json(double value) : json() {
-		new json_double(value);
-	}
-	json::json(const std::string& value) : json() {
-		new json_string(value);
-	}	
-	json::json(std::string&& value) : json() {
-		json::json(std::move(value));
-	}
-	json::json(bool value) : json() {
-		new json_boolean(value);
-	}
-	json::json(const char* value) : json() {
-		new json_string(value);
-	}
-	json::json(const array& value) : json() {
-		new json_array(value);
-	}
-	json::json(array&& value) : json() {
-		json::json(std::move(value));
-	}
-	json::json(const object& value) : json() {
-		new json_object(value);
-	}
-	json::json(object&& value) : json() {
-		json::json(std::move(value));
-	}
+	json::json() noexcept :					ptr() {}
+	json::json(int value) :					ptr(std::make_shared<json_string>(value)) {}
+	json::json(double value) :				ptr(std::make_shared<json_string>(value)){}
+	json::json(const std::string& value) :	ptr(std::make_shared<json_string>(value)) {}	
+	json::json(std::string&& value) :		ptr(std::make_shared<json_string>(value)) {}
+	json::json(bool value) :				ptr(std::make_shared<json_string>(value)) {}
+	json::json(const char* value) :			ptr(std::make_shared<json_string>(value)) {}
+	json::json(const array& value) :		ptr(std::make_shared<json_array>(value)){}
+	json::json(array&& value) :				ptr(std::make_shared<json_string>(value)) {}
+	json::json(const object& value) :		ptr(std::make_shared<json_string>(value)) {}
+	json::json(object&& value) :			ptr(std::make_shared<json_string>(value)) {}
 
 	int json::int_value() const { 
 		return ptr->get_int_value();
@@ -133,15 +110,17 @@ namespace ztJSON {
 				return ret[i];
 		}
 		if(ptr.use_count()!=1){
-			ptr.reset(get_json()->duplicate(),deleter{});
+			ptr.reset(get_json()->get_copy(),deleter{});
 		}
 		auto arr = static_cast<json_array*>(get_json())->value;
 		arr.insert(arr.end(), i - arr.size() + 1, json{});
 		return arr[i];
 	}
 	//序列化：将一个对象变成Json格式的字符串
+	//将int类型的值序列化为一个json对象
 	static void serialize(int val,std::string& ret) {
-		if (isdigit(val)) { //用于检查参数val是否为阿拉伯数字0到9。
+		//用于检查参数val是否为阿拉伯数字0到9。
+		if (isdigit(val)) { 
 			char buf[32];
 			snprintf(buf, sizeof(buf), "%d", val);
 			ret += val;
@@ -160,6 +139,7 @@ namespace ztJSON {
 	static void serialize(bool val, std::string& ret) {
 		if (val == true)	val += "true";
 		else if (val == false) val += "false";
+		else val += "null";
 	}
 
 	static void serialize(const std::string& val, std::string& ret) {
@@ -189,20 +169,41 @@ namespace ztJSON {
 		}
 		ret += '"';
 	}
-	
+	//将array序列化为json对象
 	static void serialize(const ztJSON::json::array& val, std::string ret) {
 		bool flag = true;
 		ret += "[";
-		for (const auto &c : val) {
-			if (!flag)
+		for (int i = 0; i < val.size();++i) {
+			if (flag) {
+				ret += val[i].string_value();
+				flag = false;
+			}	
+			else {
 				ret += ",";
-			
+				flag = true;
+			}		
 		}
 		ret+="]";
 	}
-
+	//将object对象转化为一个json对象
 	static void serialize(const ztJSON::json::object& val, std::string ret) {
+		std::map<std::string, json>::const_iterator iter = val.cbegin();
 		ret += "{";
+		++iter;
+		while (iter!=val.cend()) {
+			if (iter->first == std::to_string('\"')) {
+				ret += "\"";
+				iter++;
+				ret += iter->first;
+				ret += "\"";
+				ret += ":";
+				ret += "{";
+				ret += iter->second.string_value();
+			}
+			else {
+				return;
+			}
+		}
 	}
 
 
