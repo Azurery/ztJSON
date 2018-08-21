@@ -9,7 +9,8 @@ namespace ztJSON {
 		json print_err(std::string&& msg);
 	private:
 		//std::string err;
-		json_parse(const std::string& s);
+		json_parse(const std::string& s)
+			:str(s), i(0) {}
 		json parse_value();
 		json parse_null();
 		json parse_boolean();

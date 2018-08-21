@@ -1,5 +1,9 @@
+#if !ZTJSON_TEST_CONFIG
+#define ZTJSON_TEST_CASE(name) static void name()
+#define ZTJSON_TEST_ASSERT(b) assert(b)
 #ifdef DEBUG
 #undef DEBUG
+#endif
 #endif
 
 #include "Json.h"
@@ -10,42 +14,79 @@
 #include <set>
 #include <unordered_map>
 #include <algorithm>
-#include "stdafx.h"
+
 using namespace ztJSON;
-#define JSON_TEST_ASSERT(b) assert(b); 
-#define JSON_TEST_CASE(name) static void name()
-#define ASSERT_TRAITS(x) static_assert(std::x::value,#x)
-	ASSERT_TRAITS(is_nothrow_constructible<json>);
-	ASSERT_TRAITS(is_nothrow_default_constructible<json>);
-	ASSERT_TRAITS(is_copy_constructible<json>);
-	ASSERT_TRAITS(is_nothrow_move_constructible<json>);
-	ASSERT_TRAITS(is_copy_assignable<json>);
-	ASSERT_TRAITS(is_nothrow_move_assignable<json>);
-	ASSERT_TRAITS(is_nothrow_destructible<json>);
 
-	JSON_TEST_CASE(json_test)
-	{
-		const std::string sample =
-			R"({"key1":"value1", "key2":42, "key3":["hello",123,true,false,null]})";
-		std::string err;
-		auto json = json_parse::parse(sample, err);
-		//std::cout << "key1: " << json["key1"].string_value << "\n";
-		std::cout << "key3: " << json["key3"].serialize() << "\n";
-		for (auto& item : json["key3"].array_value()) {
-			std::cout << " - " << item.serialize();
-		}
+ZTJSON_TEST_CASE(ztjson_test) {
+	///test string
+	//std::string s1 = R"("   abcd")";
+	//auto _1 = json_parse::parse(s1);
+	//std::cout << std::boolalpha;
+	//std::cout << _1.is_null() << std::endl;
+	//std::cout << _1.is_bool() << std::endl;
+	//std::cout << _1.is_array() << std::endl;
+	//std::cout << _1.is_number() << std::endl;
+	//std::cout << _1.is_string() << std::endl;
+	//std::cout << _1.string_value() << std::endl;
 
-		std::list<int> l1{ 1, 2, 3 };
-		std::vector<int> l2{ 1, 2, 3 };
-		std::set<int> l3{ 1, 2, 3 };
-		JSON_TEST_ASSERT(json(l1) == json(l2));
-		JSON_TEST_ASSERT(json(l2) == json(l3));
-	}
+	///test int
+	//std::string s2 = R"(12345)";
+	//auto _2 = json_parse::parse(s2);
+	//std::cout << std::boolalpha;
+	//std::cout << _2.is_null() << std::endl;
+	//std::cout << _2.is_bool() << std::endl;
+	//std::cout << _2.is_array() << std::endl;
+	//std::cout << _2.is_number() << std::endl;
+	//std::cout << _2.is_string() << std::endl;
+	//std::cout << _2.int_value() << std::endl;
+	//assert(_2.type() == json::ZT_NUMBER);
 
-	int main(int argc, char** argv) {
-		json_test();
-		return 0;
-		
-	}
+	///test double
+	//std::string s2 = R"(12345)";
+	//auto _2 = json_parse::parse(s2);
+	//std::cout << std::boolalpha;
+	//std::cout << _2.is_null() << std::endl;
+	//std::cout << _2.is_bool() << std::endl;
+	//std::cout << _2.is_array() << std::endl;
+	//std::cout << _2.is_number() << std::endl;
+	//std::cout << _2.is_string() << std::endl;
+	//std::cout << _2.int_value() << std::endl;
+	//assert(_2.type() == json::ZT_NUMBER);
+	
+
+	///test bool
+	//std::string s4 = R"(false)";
+	//auto _4 = json_parse::parse(s4);
+	//std::cout << std::boolalpha;
+	//std::cout << _4.is_null() << std::endl;
+	//std::cout << _4.is_bool() << std::endl;
+	//std::cout << _4.is_array() << std::endl;
+	//std::cout << _4.is_number() << std::endl;
+	//std::cout << _4.is_string() << std::endl;
+	//std::cout << _4.bool_value() << std::endl;
+	//assert(_4.type() == json::ZT_BOOL);
+
+	///test array
+	/*std::string s4 = R"(false)";
+	auto _4 = json_parse::parse(s4);
+	std::cout << std::boolalpha;
+	std::cout << _4.is_null() << std::endl;
+	std::cout << _4.is_bool() << std::endl;
+	std::cout << _4.is_array() << std::endl;
+	std::cout << _4.is_number() << std::endl;
+	std::cout << _4.is_string() << std::endl;
+	std::cout << _4.bool_value() << std::endl;*/
+	//assert(_4.type() == json::ZT_BOOL);
+
+	const std::string s5 = R"("k1":"v1")";
+	std::string err;
+	const auto json_ = json_parse::parse(s5, err);
+
+	std::cout << "k1: " << json_["k1"].string_value() << "\n";
+}
+
+int main() {
+	ztjson_test();
+}
 
 

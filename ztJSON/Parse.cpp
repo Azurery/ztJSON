@@ -1,13 +1,11 @@
 #include "Parse.h"
-#include "stdafx.h"
 
 namespace ztJSON {
 	json json_parse::parse(const std::string& s, std::string& err) noexcept {
 		try {
 			json_parse parser(s);
 			return parser.parse_value();
-		}
-		catch(std::runtime_error& err_mag){
+		}catch(std::runtime_error& err_mag){
 			err = err_mag.what();
 			json null;
 			return null;
@@ -70,6 +68,50 @@ namespace ztJSON {
 		}
 		
 	}
+
+	json json_parse::parse_value() {
+		char ch = str[i++];
+		if (ch == '-' || (ch >= '0'&&ch <= '9')) {
+			i--;
+			return parse_number();
+		}
+
+		if (ch == 't') {
+			if (str.compare(0, 4, "true") == 0) {
+				i += 4;
+				return json_value::generate_true_instance();
+			}
+		}
+
+		if (ch == 'f') {
+			if (str.compare(0, 5, "false") == 0) {
+				i += 5;
+				return json_value::generate_false_instance();
+			}
+		}
+
+		if (ch == 'n') {
+			if (str.compare(0, 4, "null") == 0 ) {
+				return json_value::generate_null_instance();
+			}
+		}
+		
+		if (ch == '"') {
+			return parse_string();
+		}
+
+		//if (ch == '{') {
+		//	std::map<std::string, json> data;
+		//	ch = str[i++];
+		//	if (ch == '}') return data;
+
+		//	while (true) {
+		//		if (ch != '"') {
+
+		//		}
+		//	}
+		//}
+	}
 	json json_parse::parse_null() {
 		if (strncmp(str.c_str(), "null", 4) == 0) {
 			i += 4;
@@ -80,12 +122,12 @@ namespace ztJSON {
 	}
 	std::string json_parse::parse_string() {
 		skip_whitespace();
-		++i;
+		//++i;
 		if (str[i] == '\"') {
 			++i;
 			return {};
 		}
-		std::string container;
+		std::string ret;
 		for (; i < str.size(); ++i) {
 			char ch = str[i];
 			if (ch == '\\') {
@@ -93,45 +135,45 @@ namespace ztJSON {
 				switch (str[i]) {
 				case '\"':
 					++i;
-					container.push_back('\"');
+					ret.push_back('\"');
 					continue;
 				case '\\':
 					++i;
-					container.push_back('\\');
+					ret.push_back('\\');
 					continue;
 				case '/':
 					++i;
-					container.push_back('/');
+					ret.push_back('/');
 					continue;
 				case 'b':
 					++i;
-					container.push_back('\b');
+					ret.push_back('\b');
 					continue;
 				case 'f':
 					++i;
-					container.push_back('\f');
+					ret.push_back('\f');
 					continue;
 				case 't':
 					++i;
-					container.push_back('\t');
+					ret.push_back('\t');
 					continue;
 				case 'r':
 					++i;
-					container.push_back('\r');
+					ret.push_back('\r');
 					continue;
 				default:;
 				}
 			}
 			if (str[i] == '\"') {
 				++i;
-				return container;
+				return ret;
 			}else {
-				container.push_back(str[i]);
-				++i;
+				ret.push_back(str[i]);
 			}
 		}
 		return print_err("invalid input","");
 	}
+
 	json json_parse::parse_object() {
 		skip_whitespace();
 		assert(str[i] == '{');
@@ -170,24 +212,33 @@ namespace ztJSON {
 	json json_parse::parse_number() {
 		skip_whitespace();
 		size_t start_pos = i;
-		if(str[i]=='-')
+		if (str[i] == '-')
 			++i;
-		if (str[i] == '0')
+		if (str[i] == '0') {
 			++i;
-		else if (isdigit(str[i])) {	//当为数字1-9时
+			if (str[i] >= '0'&&str[i] <= '9') {
+				print_err("leading 0 is not allowed");
+			}
+		}else if (str[i] >= '1'&&str[i] <= '9') {	//当为数字1-9时
 			++i;
 			while (isdigit(str[i]))
 				++i;
 		}else {
 			print_err("invalid number " + str[i]);
 		}
+	
+		if (str[i] != '.'&&str[i] != 'e'&&str[i] != 'E' && (i - start_pos) <= static_cast<size_t>(std::numeric_limits<int>::digits10)){
+			return std::atoi(str.c_str() + start_pos);
+		}
+		
 		//小数点部分
 		if (str[i] == '.') {
 			++i;
-			if (!isdigit(str[i])) {
-				print_err("Unexpected digit at position");
+			if (!isdigit(str[i])/*(str[i] >= '0'&&str[i] <= '9')*/) {
+				return print_err("Unexpected digit at position");
+				//std::cout << "unexpected digit at position" << std::endl;
 			}
-			while (isdigit(str[i]))
+			while (isdigit(str[i])/*str[i] >= '0'&&str[i] <= '9'*/) 
 				++i;
 		}
 		//指数部分
@@ -196,10 +247,11 @@ namespace ztJSON {
 			if (str[i] == '-' || str[i] == '+')
 				++i;
 			if (!isdigit(str[i]))
-				print_err("Unexcepted digit at position" + i);
+				return print_err("Unexcepted digit at position" + i);
 			while (isdigit(str[i]))
 				++i;
 		}
+		//std::cout << std::strtod(str.c_str() + start_pos, nullptr);
 		return std::strtod(str.c_str() + start_pos, nullptr);
 	}
 	
@@ -228,14 +280,14 @@ namespace ztJSON {
 	}
 	json json_parse::parse_boolean() {
 		skip_whitespace();
-		if (strncmp(str.c_str(), "true", 4) == 0) {
+		/*if (strncmp(str.c_str(), "true", 4) == 0) {
 			i += 4;
 			return true;
 		}
 		if (strncmp(str.c_str(), "false", 5) == 0) {
 			i += 5;
 			return false;
-		}
-		print_err("Excepted true or false error");
+		}*/
+		return print_err("Excepted true or false error");
 	}
 }
