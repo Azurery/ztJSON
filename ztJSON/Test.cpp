@@ -14,7 +14,11 @@
  * 
  */
 
-#if !ZTJSON_TEST_CONFIG
+/*
+ *如果将ZTJSON_TEST_CUSTOM_CONFIG定义为1，则可以将
+ */
+
+#if !ZTJSON_TEST_CUSTOM_CONFIG
 #define ZTJSON_TEST_CASE(name) static void name()
 #define ZTJSON_TEST_ASSERT(b) assert(b)
 #ifdef DEBUG
