@@ -1,3 +1,19 @@
+/*!
+ * \file   Test.cpp
+ *
+ * \author Magicmanoooo
+ * \mail   zt838713968@gmail.com
+ * \date   2018/08/30 
+ *
+ * \brief  主要用于测试
+ *
+ *
+ * // Copyright (c) 2018 The ztJSON Authors. All rights reserved.
+ * // Use of this source code is governed by a BSD-style license that can be
+ * // found in the LICENSE file. See the AUTHORS file for names of contributors.
+ * 
+ */
+
 #if !ZTJSON_TEST_CONFIG
 #define ZTJSON_TEST_CASE(name) static void name()
 #define ZTJSON_TEST_ASSERT(b) assert(b)
@@ -16,6 +32,8 @@
 #include <algorithm>
 
 using namespace ztJSON;
+
+
 
 ZTJSON_TEST_CASE(ztjson_test) {
 	///test string
@@ -55,16 +73,16 @@ ZTJSON_TEST_CASE(ztjson_test) {
 	
 
 	///test bool
-	//std::string s4 = R"(false)";
-	//auto _4 = json_parse::parse(s4);
-	//std::cout << std::boolalpha;
-	//std::cout << _4.is_null() << std::endl;
-	//std::cout << _4.is_bool() << std::endl;
-	//std::cout << _4.is_array() << std::endl;
-	//std::cout << _4.is_number() << std::endl;
-	//std::cout << _4.is_string() << std::endl;
-	//std::cout << _4.bool_value() << std::endl;
-	//assert(_4.type() == json::ZT_BOOL);
+	std::string s4 = R"(false)";
+	auto _4 = json_parse::parse(s4);
+	std::cout << std::boolalpha;
+	std::cout << _4.is_null() << std::endl;
+	std::cout << _4.is_bool() << std::endl;
+	std::cout << _4.is_array() << std::endl;
+	std::cout << _4.is_number() << std::endl;
+	std::cout << _4.is_string() << std::endl;
+	std::cout << _4.bool_value() << std::endl;
+	assert(_4.type() == json::ZT_BOOL);
 
 	///test array
 	/*std::string s4 = R"(false)";
@@ -78,11 +96,11 @@ ZTJSON_TEST_CASE(ztjson_test) {
 	std::cout << _4.bool_value() << std::endl;*/
 	//assert(_4.type() == json::ZT_BOOL);
 
-	const std::string s5 = R"("k1":"v1")";
+	/*const std::string s5 = R"("k1":"v1")";
 	std::string err;
 	const auto json_ = json_parse::parse(s5, err);
 
-	std::cout << "k1: " << json_["k1"].string_value() << "\n";
+	std::cout << "k1: " << json_["k1"].string_value() << "\n";*/
 }
 
 int main() {
