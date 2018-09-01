@@ -7,6 +7,7 @@
 #include <memory>
 #include <cassert>
 #include <iostream>
+#include <cstdlib>
 
 namespace ztJSON {
 	////定义一个自己的删除器类deleter
@@ -26,7 +27,7 @@ namespace ztJSON {
 		friend class json_value;
 	public:
 		//JSON的六种类型
-		enum json_type {
+		enum class json_type : uint8_t {
 			ZT_NULL,
 			ZT_BOOL,
 			ZT_ARRAY,
@@ -171,7 +172,7 @@ namespace ztJSON {
 		friend class json_value;
 	public:
 		json::json_type type() const override{
-			return json::ZT_NUMBER;
+			return json::json_type::ZT_NUMBER;
 		}
 		/*bool less(const json_value* other) const {
 			return value < other->get_value();
@@ -260,7 +261,7 @@ namespace ztJSON {
 			return new json_boolean(value);
 		}*/
 		json::json_type type() const override {
-			return json::ZT_BOOL;
+			return json::json_type::ZT_BOOL;
 		}
 		bool equal(const json_value* other) const override {
 			return value == static_cast<decltype(this)>(other)->value;
@@ -279,7 +280,7 @@ namespace ztJSON {
 			return new json_string(value);
 		}*/
 		json::json_type type() const override {
-			return json::ZT_STRING;
+			return json::json_type::ZT_STRING;
 		}
 		bool equal(const json_value* other) const override {
 			return value == static_cast<decltype(this)>(other)->value;
@@ -300,7 +301,7 @@ namespace ztJSON {
 		}*/
 
 		json::json_type type() const override {
-			return json::ZT_OBJECT;
+			return json::json_type::ZT_OBJECT;
 		}
 		bool equal(const json_value* other) const override {
 			return value == static_cast<decltype(this)>(other)->value;\
@@ -322,7 +323,7 @@ namespace ztJSON {
 
 		
 		json::json_type type() const override {
-			return json::ZT_ARRAY;
+			return json::json_type::ZT_ARRAY;
 		}
 		bool equal(const json_value* other) const override {
 			return value == static_cast<decltype(this)>(other)->value;
@@ -338,7 +339,7 @@ namespace ztJSON {
 		}*/
 
 		json::json_type type() const override {
-			return json::ZT_NULL;
+			return json::json_type::ZT_NULL;
 		}
 		bool equal(const json_value* other) const override {
 			return this == other;

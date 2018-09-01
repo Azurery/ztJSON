@@ -11,7 +11,7 @@ namespace ztJSON {
 	json::json(const std::string& value) :	ptr(std::make_shared<json_string>(value)) {}	
 	json::json(std::string&& value) :		ptr(std::make_shared<json_string>(std::move(value))) {}
 	
-	std::shared_ptr<json_value> true_ = std::make_shared<json_boolean>(true);
+ 	std::shared_ptr<json_value> true_ = std::make_shared<json_boolean>(true);
 	std::shared_ptr<json_value> false_ = std::make_shared<json_boolean>(false);
 	json::json(bool value) :                ptr(value ? true_ : false_) {}
 	json::json(const char* value) :			ptr(std::make_shared<json_string>(value)) {}

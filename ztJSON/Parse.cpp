@@ -69,6 +69,46 @@ namespace ztJSON {
 		
 	}
 
+	//************************************
+	// \method name:    encode_utf8
+	// \parameter:		uint32_t c			输入的字符
+	// \parameter:		std::string & ret	经过UTF-8编码后的结果
+	//
+	// \brief:			主要用于处理\uXXXX这种转义序列
+	//************************************
+
+// 	码点范围			码点位数		 字节1		 字节2        字节3       字节4
+// 	U+0000 ~ U+0007F   7		0xxxxxxx
+// 	U+0080 ~ U+07FF	   11		110xxxxx    10xxxxxx
+// 	U+0800 ~ U+FFFF	   16		1110xxxx    10xxxxxx     10xxxxxx
+// 	U+10000 ~ U+10FFFF 21		11110xxx    10xxxxxx     10xxxxxx    10xxxxxx
+// 	
+	void json_parse::encode_utf8(uint32_t c, std::string& ret) {
+		if (c < 0)
+			return;
+		else if (c <= 0x7F) {
+			ret += static_cast<char>(c & 0x7F);
+		} else if (c <= 0x7FF) {
+			//0xC0 ===> 1100 0000
+			//0x80 ===> 1000 0000
+			//0x3F ===> 0011 1111
+			 
+			//U+0080 ~ U+07FF 
+			ret += static_cast<char>(0xC0 | ((c >> 6) & 0xFF));	  //将字节1进行补全	
+			ret += static_cast<char>(0x80 | (c & 0x3F));	      //c & 0x3F ===> 获取c的低6位，再|0x80 ====> 得到完整的字节2
+		} else if (c <= 0xFFFF) {
+			ret += static_cast<char>(0xE0 | ((c >> 12) & 0xFF));
+			ret += static_cast<char>(0x80 | ((c >> 6) & 0x3F));
+			ret += static_cast<char>(0x80 | (c & 0x3F));
+		} else {
+			assert(c <= 0x10FFFF && "the code out of the range");
+			ret += static_cast<char>(0xF0 | ((c >> 18) & 0xFF));
+			ret += static_cast<char>(0x80 | ((c >> 12) & 0xFF));
+			ret += static_cast<char>(0x80 | ((c >> 6) & 0x3F));
+			ret += static_cast<char>(0x80 | (c & 0x3F));
+		}
+	}
+
 	json json_parse::parse_value() {
 		char ch = str[i++];
 		if (ch == '-' || (ch >= '0'&&ch <= '9')) {
