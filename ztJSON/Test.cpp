@@ -167,6 +167,17 @@ using namespace ztJSON;
 		}
 	}
 
+	static void test_parse_object() {
+		auto ret = json_parse::parse("{}");
+		EXPECT_EQ_INT(json::json_type::ZT_OBJECT, ret.type());
+		EXPECT_EQ_INT(0, ret.get_object_size());
+	
+		std::string str = 
+			R"({"n":null,"f":false,"t":true,"i":123,"s":"abcd","a":[1,2,3],"o":{"1":1,"2":2}})";
+		auto ret1 = json_parse::parse(str);
+		EXPECT_EQ_INT(json::json_type::ZT_OBJECT, ret.type());
+		EXPECT_EQ_INT(7, ret1.get_object_size());
+	}
 	
 	static void test_parse() {
 // 		test_parse_null();
@@ -175,37 +186,12 @@ using namespace ztJSON;
 // 		test_parse_number();
 //		test_parse_string();
 //		test_parse_array();
-	
+		test_parse_object();
 	}
 
 	int main() {
 		std::cout << std::boolalpha;
 		test_parse();
 		printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
-		
-// 		std::string input = R"("hello")";
-// 		auto ret = json_parse::parse(input); 
-// 		auto val = ret.string_value(); 
-// 		size_t len = val.size(); 
-//		std::cout << ret.string_value() << std::endl;
-// 		std::cout << sizeof("HELLO") << std::endl;
-// 		
-// 		std::string str = "hello";
-// 		std::cout << strcmp("hello", str.c_str()) << std::endl;
-		return 0;
 	}
-
-// 	int main() {
-// 		const std::string simple_test =
-// 			R"({"k1":"v1", "k2":42, "k3":["a",123,true,false,null]})";
-// 
-// 		std::string err;
-// 		const auto json = json_parse::parse(simple_test, err);
-// 		std::cout << "k1: " << json["k1"].string_value() << "\n";
-// 		std::cout << "k2: " << json["k2"].int_value() << "\n";
-
-		//std::cout << "k3: " << json["k3"].serialize() << "\n";
-		//const std::string s =R"("abcd")";
-		//std::cout << json_parse::parse(s).string_value() << std::endl;
-// 	}
 

@@ -84,6 +84,7 @@ namespace ztJSON {
 		const json::object& object_value() const;
 		const json get_array_element(size_t index) const;
 		const size_t get_array_size() const;
+		const size_t get_object_size() const;
 		std::string serialize() const {
 			std::string ret;
 			serialize(ret);
@@ -135,6 +136,7 @@ namespace ztJSON {
 		const virtual json::array& get_array_value() const;
 		const virtual json::object& get_object_vlaue() const;
 		const virtual size_t get_array_nums() const;
+		const virtual size_t get_object_nums() const;
 		const virtual json get_array_items(size_t index) const;
 		
 		static json_value* generate_null_instance();
@@ -298,8 +300,8 @@ namespace ztJSON {
 		friend class json;
 		const json& operator[](const std::string& key) const override;
 	public:
-		json_object(const json::object& val):value(val){}
-		json_object(const json::object&& val):value(std::move(val)){}
+		json_object(const json::object& val):obj(val){}
+		json_object(const json::object&& val):obj(std::move(val)){}
 		/*json_value* clone() const override {
 			return new json_object(value);
 		}*/
@@ -307,11 +309,14 @@ namespace ztJSON {
 		json::json_type type() const override {
 			return json::json_type::ZT_OBJECT;
 		}
+		const size_t get_object_nums() const {
+			return obj.size();
+		}
 		bool equal(const json_value* other) const override {
-			return value == static_cast<decltype(this)>(other)->value;\
+			return obj == static_cast<decltype(this)>(other)->obj;
 		}
 	private:
-		json::object value;
+		json::object obj;
 	};
 
 	class json_array : public json_value {
