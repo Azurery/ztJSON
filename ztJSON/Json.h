@@ -82,6 +82,8 @@ namespace ztJSON {
 		const std::string& string_value() const;
 		const json::array& array_value() const;
 		const json::object& object_value() const;
+		const json get_array_element(size_t index) const;
+		const size_t get_array_size() const;
 		std::string serialize() const {
 			std::string ret;
 			serialize(ret);
@@ -132,6 +134,8 @@ namespace ztJSON {
 		const virtual bool get_bool_value() const;
 		const virtual json::array& get_array_value() const;
 		const virtual json::object& get_object_vlaue() const;
+		const virtual size_t get_array_nums() const;
+		const virtual json get_array_items(size_t index) const;
 		
 		static json_value* generate_null_instance();
 		static json_value* generate_true_instance();
@@ -315,21 +319,26 @@ namespace ztJSON {
 		friend class json_value;
 		const json& operator[](size_t i) const override;
 	public:
-		json_array(const json::array& val):value(val){}
-		json_array(const json::array&& val):value(std::move(val)){}
+		json_array(const json::array& val):arr(val){}
+		json_array(const json::array&& val):arr(std::move(val)){}
 		/*json_value* clone() const override {
 			return new json_array(value);
 		}*/
 
-		
+		const size_t get_array_nums() const {
+			return arr.size();
+		}
+		const json get_array_items(size_t index) const {
+			return arr[index];
+		}
 		json::json_type type() const override {
 			return json::json_type::ZT_ARRAY;
 		}
 		bool equal(const json_value* other) const override {
-			return value == static_cast<decltype(this)>(other)->value;
+			return arr == static_cast<decltype(this)>(other)->arr;
 		}
 	private:
-		json::array value;
+		json::array arr;
 	};
 
 	class json_null : public json_value {

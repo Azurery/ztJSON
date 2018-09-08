@@ -20,6 +20,7 @@ namespace ztJSON {
 		std::string parse_string();
 		void skip_whitespace();
 		void skip_commits();
+		uint32_t parse_hex(const std::string& from);
 		void encode_utf8(uint32_t c, std::string& ret);
 	private:
 		bool flag;

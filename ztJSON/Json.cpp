@@ -4,8 +4,8 @@ namespace ztJSON {
 	class json_value;
 	//static const int MAX_DEPTH = 200;	//表示最多可处理的嵌套的深度
 	
-	json::json() noexcept :					ptr() {}
-	json::json(std::nullptr_t) :			ptr() {}
+	json::json() noexcept :					ptr(std::make_shared<json_null>()) {}
+	json::json(std::nullptr_t) :			json() {}
 	json::json(int value) :					ptr(std::make_shared<json_int>(value)) {}
 	json::json(double value) :				ptr(std::make_shared<json_double>(value)){}
 	json::json(const std::string& value) :	ptr(std::make_shared<json_string>(value)) {}	
@@ -140,23 +140,30 @@ namespace ztJSON {
 		return reinterpret_cast<const json_string*>(this)->value;
 	}
 	const json::array& json_value::get_array_value() const { 
-		return static_cast<const json_array*>(this)->value;
+		return static_cast<const json_array*>(this)->arr;
 	}
 	const json::object& json_value::get_object_vlaue() const { 
 		return static_cast<const json_object*>(this)->value;
 	}
+	const size_t json_value::get_array_nums() const {
+		return static_cast<const json_array*>(this)->get_array_nums();
+	}
 
-	const json& json_value::get_value(size_t i) const { 
-		auto ret = static_cast<const json_array*>(this)->value;
+	const json json_value::get_array_items(size_t index) const{
+		return static_cast<const json_array*>(this)->get_array_items(index);
+	}
+
+	const json& json_value::get_value(size_t i) const {
+		auto ret = static_cast<const json_array*>(this)->arr;
 		if (i < ret.size())
 			return ret[i];
-		return json::ZT_NULL;
+		return json_value::generate_null_instance();
 	}
 	const json& json_value::get_value(const std::string& key) const {
 		auto obj = static_cast<const json_object*>(this)->value;
 		auto ret = obj.find(key);
 		if (ret == obj.end())
-			return json::ZT_NULL;
+			return json_value::generate_null_instance();
 		return ret->second;
 		
 	}
@@ -310,6 +317,14 @@ namespace ztJSON {
 		}
 	}
 
+	const size_t json::get_array_size() const {
+		return ptr->get_array_nums();
+	}
+
+	const json json::get_array_element(size_t index) const{
+		return ptr->get_array_items(index);
+	}
+
 	const json& json_value::operator[](size_t) const {
 		json json_null;
 		return json_null;
@@ -322,15 +337,15 @@ namespace ztJSON {
 
 	const json& json_object::operator[](const std::string& key) const {
 		auto iter = value.find(key);
-		return (iter == value.end()) ? json() : iter->second;
+		return /*(iter == value.end()) ? json() : */iter->second;
 	}
 
 	const json& json_array::operator[](size_t i) const {
-		if (i >= value.size()) {
+		if (i >= arr.size()) {
 			json json_null;
 			return json_null;
 		}else {
-			return value[i];
+			return arr[i];
 		}
 	}
 
