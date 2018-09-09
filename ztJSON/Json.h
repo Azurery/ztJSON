@@ -85,6 +85,9 @@ namespace ztJSON {
 		const json get_array_element(size_t index) const;
 		const size_t get_array_size() const;
 		const size_t get_object_size() const;
+		const std::string get_object_key(const std::string key) const;
+		const size_t get_object_key_size(const std::string key) const;
+		const json get_object_value(const std::string key) const;
 		std::string serialize() const {
 			std::string ret;
 			serialize(ret);
@@ -137,8 +140,10 @@ namespace ztJSON {
 		const virtual json::object& get_object_vlaue() const;
 		const virtual size_t get_array_nums() const;
 		const virtual size_t get_object_nums() const;
+		const virtual std::string get_object_key_wrapper(const std::string key) const;
 		const virtual json get_array_items(size_t index) const;
-		
+		const virtual json get_object_value_wrapper(const std::string key) const;
+
 		static json_value* generate_null_instance();
 		static json_value* generate_true_instance();
 		static json_value* generate_false_instance();
@@ -308,6 +313,12 @@ namespace ztJSON {
 
 		json::json_type type() const override {
 			return json::json_type::ZT_OBJECT;
+		}
+		const std::string get_object_key_wrapper(const std::string key) const {
+			return obj.find(key)->first;
+		}
+		const json get_object_value_wrapper(const std::string key) const {
+			return obj.find(key)->second;
 		}
 		const size_t get_object_nums() const {
 			return obj.size();

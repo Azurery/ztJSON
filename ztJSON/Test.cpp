@@ -65,8 +65,8 @@ using namespace ztJSON;
 #define EXPECT_EQ_DOUBLE(expect, actual)	EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%.17g")
 #define EXPECT_TRUE(actual)					EXPECT_EQ_BASE((actual) != 0, "true", "false", "%s")
 #define EXPECT_FALSE(actual)				EXPECT_EQ_BASE((actual) == 0, "false", "true", "%s")
-#define EXPECT_EQ_STRING(expect, actual, length)\
-		EXPECT_EQ_BASE((sizeof(expect) - 1) == length && (actual.compare(expect)), expect, actual, "%s")
+#define EXPECT_EQ_STRING(expect, actual)\
+		EXPECT_EQ_BASE(strcmp(expect, actual.data()) == 0, expect, actual.data(), "%s")
 
 #if defined(_MSC_VER)
 #define EXPECT_EQ_SIZE_T(expect, actual)	EXPECT_EQ_BASE((expect) == (actual), (size_t)expect, (size_t)actual, "%Iu")
@@ -130,11 +130,14 @@ using namespace ztJSON;
 		auto ret = (json_parse::parse(input));\
 		auto val = (ret.string_value());\
 		size_t len = (val.size());\
-		EXPECT_EQ_STRING(expect, val, len);\
+		EXPECT_EQ_STRING(expect, val);\
 	} while(0)
 
 	static void test_parse_string() {
-		TEST_STRING("a", R"("a")");
+		TEST_STRING("abcd", R"("abcd")");
+		TEST_STRING("", R"("")");
+		TEST_STRING("hello world", R"("hello world")");
+		TEST_STRING("\x24", R"("002")");
 	}
 
 	static void test_parse_array() {
@@ -173,12 +176,44 @@ using namespace ztJSON;
 		EXPECT_EQ_INT(0, ret.get_object_size());
 	
 		std::string str = 
-			R"({"n":null,"f":false,"t":true,"i":123,"s":"abcd","a":[1,2,3],"o":{"1":1,"2":2}})";
+			R"({"f":false,"t":true,"i":123,"s":"abcd","a":[1,2,3],"o":{"1":1,"2":2,"3":3}})";
 		auto ret1 = json_parse::parse(str);
 		EXPECT_EQ_INT(json::json_type::ZT_OBJECT, ret.type());
-		EXPECT_EQ_INT(7, ret1.get_object_size());
+		EXPECT_EQ_INT(6, ret1.get_object_size());
+//		EXPECT_EQ_STRING("n", (ret1.get_object_key("n")));
+		EXPECT_EQ_STRING("f", (ret1.get_object_key("f")));
+		EXPECT_EQ_INT(json::json_type::ZT_BOOL, ret1.get_object_value("f").type());
+		EXPECT_EQ_STRING("t", (ret1.get_object_key("t")));
+		EXPECT_EQ_INT(json::json_type::ZT_BOOL, ret1.get_object_value("t").type());
+		
+		EXPECT_EQ_STRING("i", (ret1.get_object_key("i")));
+		EXPECT_EQ_INT(json::json_type::ZT_NUMBER, ret1.get_object_value("i").type());
+		EXPECT_EQ_DOUBLE(123.0, (ret1.get_object_value("i").double_value()));
+
+		EXPECT_EQ_STRING("s", ret1.get_object_key("s"));
+		EXPECT_EQ_INT(json::json_type::ZT_STRING, ret1.get_object_value("s").type());
+		EXPECT_EQ_STRING("abcd", ret1.get_object_value("s").string_value());
+
+		EXPECT_EQ_STRING("a", ret1.get_object_key("a"));
+		EXPECT_EQ_INT(json::json_type::ZT_ARRAY, ret1.get_object_value("a").type());
+		EXPECT_EQ_SIZE_T(3, ret1.get_object_value("a").get_array_size());
+		for (int i = 0; i < 3; i++) {
+			auto result = ret1.get_object_value("a").get_array_element(i);
+			EXPECT_EQ_INT(json::json_type::ZT_NUMBER, result.type());
+			EXPECT_EQ_DOUBLE(i + 1.0, result.double_value());
+		}
+		EXPECT_EQ_STRING("o", ret1.get_object_key("o"));
+		EXPECT_EQ_INT(json::json_type::ZT_OBJECT, ret1.get_object_value("o").type());
+		for (int i = 1; i < 4; i++) {
+			auto val = ret1.get_object_value("o").get_object_value(std::to_string(i));
+			//EXPECT_EQ_SIZE_T(1, val.get_object_key_size(std::to_string(i)));
+			EXPECT_EQ_INT(json::json_type::ZT_NUMBER, val.type());
+			EXPECT_EQ_DOUBLE(i, val.double_value());
+		}
 	}
-	
+#define TEST_PARSE_ERROR(error, json)\
+
+
 	static void test_parse() {
 // 		test_parse_null();
 // 		test_parse_true();

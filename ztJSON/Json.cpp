@@ -153,8 +153,16 @@ namespace ztJSON {
 		return static_cast<const json_object*>(this)->get_object_nums();
 	}
 
+	const std::string json_value::get_object_key_wrapper(const std::string key) const {
+		return static_cast<const json_object*>(this)->get_object_key_wrapper(key);
+	}
+
 	const json json_value::get_array_items(size_t index) const {
 		return static_cast<const json_array*>(this)->get_array_items(index);
+	}
+
+	const ztJSON::json json_value::get_object_value_wrapper(const std::string key) const {
+		return static_cast<const json_object*>(this)->get_object_value_wrapper(key);
 	}
 
 	const json& json_value::get_value(size_t i) const {
@@ -331,6 +339,18 @@ namespace ztJSON {
 
 	const size_t json::get_object_size() const {
 		return ptr->get_object_nums();
+	}
+
+	const std::string json::get_object_key(const std::string key) const {
+		return ptr->get_object_key_wrapper(key);
+	}
+
+	const size_t json::get_object_key_size(const std::string key) const {
+		return (ptr->get_object_key_wrapper(key)).size();
+	}
+
+	const json json::get_object_value(const std::string key) const {
+		return (ptr->get_object_value_wrapper(key));
 	}
 
 	const json& json_value::operator[](size_t) const {
