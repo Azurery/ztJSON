@@ -14,22 +14,6 @@
 *
 */
 
-/*
-*如果将ZTJSON_TEST_CUSTOM_CONFIG定义为1，则可以将你自己的tester集成
-*到此测试之中。
-*/
-
-// #if !ZTJSON_TEST_CUSTOM_CONFIG
-// #define ZTJSON_TEST_CPP_PREFIX_CODE
-// #define ZTJSON_TEST_CPP_SUFFIX_CODE
-// #define ZTJSON_TEST_CASE(name) static void name()
-// #define ZTJSON_TEST_ASSERT(b) assert(b)
-// #ifdef DEBUG
-// #undef DEBUG
-// #endif
-// #endif
-
-
 #include "Json.h"
 #include "Parse.h"
 #include <cassert>
@@ -39,10 +23,6 @@
 #include <unordered_map>
 #include <algorithm>
 #include <cstdio>
-
-//在此处可以insert自定义的prefix code（includes，function，declarations...）
-//以满足your own requestments
-/*ZTJSON_TEST_CPP_PREFIX_CODE*/
 
 using namespace ztJSON;
 
@@ -75,7 +55,8 @@ using namespace ztJSON;
 #endif
 
 	static void test_parse_null() {
-		EXPECT_EQ_INT(json::json_type::ZT_BOOL, json_parse::parse("false").type());
+		auto ret = json_parse::parse("null");
+		EXPECT_EQ_INT(json::json_type::ZT_NULL, ret.type());
 	}
 	
 	static void test_parse_true() {
@@ -133,11 +114,15 @@ using namespace ztJSON;
 		EXPECT_EQ_STRING(expect, val);\
 	} while(0)
 
+	//FIXME:
 	static void test_parse_string() {
-		TEST_STRING("abcd", R"("abcd")");
-		TEST_STRING("", R"("")");
-		TEST_STRING("hello world", R"("hello world")");
-		TEST_STRING("\x24", R"("002")");
+// 		TEST_STRING("abcd", R"("abcd")");
+//  		TEST_STRING("", R"("")");
+//  		TEST_STRING("hello world", R"("hello world")");
+// 		TEST_STRING("\x24", R"("\u0024")");		//$
+// 		TEST_STRING("\xC2\xA2", R"("\U00A2")");
+		TEST_STRING("张", R"("\u5F20")");
+//		std::cout << R"("\u0024")" << std::endl;
 	}
 
 	static void test_parse_array() {
@@ -176,11 +161,11 @@ using namespace ztJSON;
 		EXPECT_EQ_INT(0, ret.get_object_size());
 	
 		std::string str = 
-			R"({"f":false,"t":true,"i":123,"s":"abcd","a":[1,2,3],"o":{"1":1,"2":2,"3":3}})";
+			R"({"f":false,"t":true,"i":123,"s":"abcd","a":[1,2,3],"n":null,"o":{"1":1,"2":2,"3":3}})";
 		auto ret1 = json_parse::parse(str);
 		EXPECT_EQ_INT(json::json_type::ZT_OBJECT, ret.type());
-		EXPECT_EQ_INT(6, ret1.get_object_size());
-//		EXPECT_EQ_STRING("n", (ret1.get_object_key("n")));
+		EXPECT_EQ_INT(7, ret1.get_object_size());
+		EXPECT_EQ_STRING("n", (ret1.get_object_key("n")));
 		EXPECT_EQ_STRING("f", (ret1.get_object_key("f")));
 		EXPECT_EQ_INT(json::json_type::ZT_BOOL, ret1.get_object_value("f").type());
 		EXPECT_EQ_STRING("t", (ret1.get_object_key("t")));
@@ -210,18 +195,51 @@ using namespace ztJSON;
 			EXPECT_EQ_INT(json::json_type::ZT_NUMBER, val.type());
 			EXPECT_EQ_DOUBLE(i, val.double_value());
 		}
+		EXPECT_EQ_INT(json::json_type::ZT_NULL, ret1.get_object_value("n").type());
 	}
-#define TEST_PARSE_ERROR(error, json)\
+
+	
+		
+
+	static void test_parse_comments() {
+		std::string comment_test = R"({
+      // comment /* with nested comment */
+	"a": 1,
+		// comment
+		// continued
+		"b" : "text",
+		/* multi
+		line
+		comment
+		// line-comment-inside-multiline-comment
+		*/
+		// and single-line comment
+		// and single-line comment /* multiline inside single line */
+		"c": [1, 2, 3]
+		// and single-line comment at end of object
+	})";
+		auto ret = json_parse::parse(comment_test);
+		EXPECT_EQ_INT(json::json_type::ZT_NUMBER, ret.get_object_value("a").type());
+		EXPECT_EQ_INT(1, ret.get_object_value("a").int_value());
+		EXPECT_EQ_INT(json::json_type::ZT_STRING, ret.get_object_value("b").type());
+		EXPECT_EQ_STRING("text", ret.get_object_value("b").string_value());
+		EXPECT_EQ_STRING("c", ret.get_object_key("c"));
+		EXPECT_EQ_INT(json::json_type::ZT_ARRAY, ret.get_object_value("c").type());
+		EXPECT_EQ_INT(1, ret.get_object_value("c").get_array_element(0).int_value());
+		EXPECT_EQ_INT(2.0, ret.get_object_value("c").get_array_element(1).double_value());
+	}
+
 
 
 	static void test_parse() {
-// 		test_parse_null();
-// 		test_parse_true();
+//  	test_parse_null();
+//  	test_parse_true();
 // 		test_parse_false();
 // 		test_parse_number();
 //		test_parse_string();
-//		test_parse_array();
-		test_parse_object();
+// 		test_parse_array();
+// 		test_parse_object();
+// 		test_parse_comments();
 	}
 
 	int main() {

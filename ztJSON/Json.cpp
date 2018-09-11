@@ -2,16 +2,15 @@
 #include <string>
 namespace ztJSON {
 	class json_value;
-	//static const int MAX_DEPTH = 200;	//表示最多可处理的嵌套的深度
-	
-	json::json() noexcept :					ptr(std::make_shared<json_null>()) {}
-	json::json(std::nullptr_t) :			json() {}
+	const std::shared_ptr<json_value> null = std::make_shared<json_null>();
+	json::json() noexcept :					ptr(null) {}
+	json::json(std::nullptr_t) :			ptr(null) {}
 	json::json(int value) :					ptr(std::make_shared<json_int>(value)) {}
 	json::json(double value) :				ptr(std::make_shared<json_double>(value)){}
 	json::json(const std::string& value) :	ptr(std::make_shared<json_string>(value)) {}	
 	json::json(std::string&& value) :		ptr(std::make_shared<json_string>(std::move(value))) {}
 	
- 	std::shared_ptr<json_value> true_ = std::make_shared<json_boolean>(true);
+   	std::shared_ptr<json_value> true_ = std::make_shared<json_boolean>(true);
 	std::shared_ptr<json_value> false_ = std::make_shared<json_boolean>(false);
 	json::json(bool value) :                ptr(value ? true_ : false_) {}
 	json::json(const char* value) :			ptr(std::make_shared<json_string>(value)) {}
@@ -35,8 +34,8 @@ namespace ztJSON {
 
 
 	json_value* json_value::generate_null_instance() {
-		static json_null null_instance{};
-		return &null_instance;
+ 		static json_null null_instance;
+ 		return &null_instance;
 	}
 
 	json_value* json_value::generate_true_instance() {

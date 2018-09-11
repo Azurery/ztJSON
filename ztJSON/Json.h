@@ -10,17 +10,6 @@
 #include <cstdlib>
 
 namespace ztJSON {
-	////定义一个自己的删除器类deleter
-	//class deleter {
-	//	std::vector<const json_value*> temp;
-	//public:
-	//	void operator()(const json_value* other) noexcept;
-	//	void self_delete() const;
-	//private:
-	//	static bool flag;
-	//	static std::vector<const json_value*> pool;
-	//};
-
 	class json_value;
 
 	class json final {
@@ -35,6 +24,7 @@ namespace ztJSON {
 			ZT_STRING,
 			ZT_OBJECT
 		};
+
 		//ARRAY类型
 		using array=std::vector<json>;
 		//OBJECT类型
@@ -107,7 +97,6 @@ namespace ztJSON {
 	private:
 		//ptr为指向内部实际类型json_value的智能指针
 		std::shared_ptr<json_value> ptr;
-		//json(json_value* value);
 	};
 
 	
@@ -162,22 +151,6 @@ namespace ztJSON {
 		virtual ~json_value() {}
 	};
 
-	/*template<json::json_type type_catagory, typename T>
-	struct value : public json_value {
-	protected:
-		explicit value(const T& value) : value_(value) {}
-		explicit value(T&& value) : value_(std::move(value)){}
-
-		json::json_type type() const override {
-			return type_catagory;
-		}
-
-		bool equal(const json_value* other) const override {
-			return value_==static_cast<
-		}
-			
-		const T value_;
-	};*/
 	class json_number : public json_value {
 		friend class json;
 		friend class json_value;
@@ -188,9 +161,7 @@ namespace ztJSON {
 		/*bool less(const json_value* other) const {
 			return value < other->get_value();
 		}*/
-		/*bool less(const JsonValue * other) const override {
-			return m_value < static_cast<const Value<tag, T> *>(other)->m_value;
-		}*/
+
 		virtual int get_int() const = 0;
 		virtual double get_double() const = 0;
 		virtual bool equal_to(int i) const = 0;
